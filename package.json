@@ -1,0 +1,16 @@
+{
+  "name": "@kernelminds/create-gix-app",
+  "version": "0.0.1",
+  "description": "🚀 The official Scailo starter framework. Instantly scaffold a complete, dependency-ready starter project that could be deployed as an application or a widget on Scailo.",
+  "main": "index.js",
+  "repository": "https://github.com/scailo/create-gix-app",
+  "author": "Pratheek Adidela",
+  "license": "Apache-2.0",
+  "private": false,
+  "bin": "./bin/create-gix-app.js",
+  "devDependencies": {
+    "@types/node": "^24.6.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {}
+}
