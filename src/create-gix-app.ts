@@ -62,6 +62,11 @@ async function setupNPMDependencies() {
         "typescript",
         "@types/node",
         "esbuild",
+
+        "fastify",
+        "@fastify/http-proxy",
+        "@fastify/static",
+        "dotenv"
     ];
 
     await spawnChildProcess("npm", ["install", ...npmDevDependencies, "--save-dev"]);
@@ -113,6 +118,8 @@ async function createBuildScripts({ inputCSSPath, distFolderName, inputTSPath }:
 
         ["ui:build", `npx esbuild ${inputTSPath} --bundle --outfile=${path.join(distFolderName, "js", "bundle.src.min.js")} --minify`],
         ["ui:watch", `npx esbuild ${inputTSPath} --bundle --outfile=${path.join(distFolderName, "js", "bundle.src.min.js")} --watch`],
+
+        ["dev:serve", `npx tsx -r dotenv/config server.ts`],
     ]
 
     for (let i = 0; i < scripts.length; i++) {
@@ -133,13 +140,13 @@ async function createIndexHTML({ appName, version }: { appName: string, version:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="./resources/dist/img/favicon.ico" type="image/x-icon">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js?v=${version}">
-    <link rel="stylesheet" href="./resources/dist/css/bundle.css?v=${version}">
+    <link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js">
+    <link rel="stylesheet" href="./resources/dist/css/bundle.css">
     <title>${appName}</title>
 </head>
 <body class="text-gray-800">
     <!-- Attach the JS bundle here -->
-    <script src="./resources/dist/js/bundle.src.min.js?v=${version}"></script>
+    <script src="./resources/dist/js/bundle.src.min.js"></script>
 </body>
 </html>`;
     // Create index.html
@@ -173,6 +180,10 @@ resources:
 
     // Create MANIFEST.yaml
     fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
+}
+
+async function createTestServer() {
+    fs.copyFileSync(path.join(rootFolder, "server", "server.ts"), "server.ts");
 }
 
 async function runPostSetupScripts() {
@@ -209,6 +220,7 @@ async function main() {
     await createIndexHTML({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version });
     await createEntryTS({ inputTSPath });
     await createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version, appIdentifier: `${destinationPackage}.gix` });
+    await createTestServer();
 
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
     await runPostSetupScripts();

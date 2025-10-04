@@ -111,6 +111,10 @@ function setupNPMDependencies() {
                         "typescript",
                         "@types/node",
                         "esbuild",
+                        "fastify",
+                        "@fastify/http-proxy",
+                        "@fastify/static",
+                        "dotenv"
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDevDependencies, true), ["--save-dev"], false))];
                 case 2:
@@ -165,6 +169,7 @@ function createBuildScripts(_a) {
                 ["css:watch", "npx tailwindcss -i ".concat(inputCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --watch")],
                 ["ui:build", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
                 ["ui:watch", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
+                ["dev:serve", "npx tsx -r dotenv/config server.ts"],
             ];
             for (i = 0; i < scripts.length; i++) {
                 script = scripts[i];
@@ -181,7 +186,7 @@ function createIndexHTML(_a) {
         var html;
         var appName = _b.appName, version = _b.version;
         return __generator(this, function (_c) {
-            html = "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link rel=\"shortcut icon\" href=\"./resources/dist/img/favicon.ico\" type=\"image/x-icon\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\n    <link rel=\"preload\" as=\"script\" href=\"./resources/dist/js/bundle.src.min.js?v=".concat(version, "\">\n    <link rel=\"stylesheet\" href=\"./resources/dist/css/bundle.css?v=").concat(version, "\">\n    <title>").concat(appName, "</title>\n</head>\n<body class=\"text-gray-800\">\n    <!-- Attach the JS bundle here -->\n    <script src=\"./resources/dist/js/bundle.src.min.js?v=").concat(version, "\"></script>\n</body>\n</html>");
+            html = "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link rel=\"shortcut icon\" href=\"./resources/dist/img/favicon.ico\" type=\"image/x-icon\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\n    <link rel=\"preload\" as=\"script\" href=\"./resources/dist/js/bundle.src.min.js\">\n    <link rel=\"stylesheet\" href=\"./resources/dist/css/bundle.css\">\n    <title>".concat(appName, "</title>\n</head>\n<body class=\"text-gray-800\">\n    <!-- Attach the JS bundle here -->\n    <script src=\"./resources/dist/js/bundle.src.min.js\"></script>\n</body>\n</html>");
             // Create index.html
             fs.writeFileSync("index.html", html.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
@@ -208,6 +213,14 @@ function createManifest(_a) {
             manifest = "\nmanifest_version: 1\napp_version: \"".concat(version, "\"\napp_name: \"").concat(appName, "\"\napp_unique_identifier: \"").concat(appIdentifier, "\"\nmin_genesis_version: \"*\"\nmax_genesis_version: \"*\"\nresources:\n     html_entry: \"index.html\"\n     logos:\n          - \"resources/dist/img/logo.png\"\n     external_apis: []");
             // Create MANIFEST.yaml
             fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
+            return [2 /*return*/];
+        });
+    });
+}
+function createTestServer() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            fs.copyFileSync(path.join(rootFolder, "server", "server.ts"), "server.ts");
             return [2 /*return*/];
         });
     });
@@ -269,11 +282,14 @@ function main() {
                     return [4 /*yield*/, createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version: version, appIdentifier: "".concat(destinationPackage, ".gix") })];
                 case 6:
                     _b.sent();
-                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createTestServer()];
                 case 7:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
                 case 8:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 9:
                     _b.sent();
                     console.log("Hello there! We are live! This is from TypeScript");
                     return [2 /*return*/];

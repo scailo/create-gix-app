@@ -1,6 +1,7 @@
 {
   "exclude": [
     "*test-widget*",
+    "server",
   ],
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
@@ -14,7 +15,9 @@
     // "types": [],
     // For nodejs:
     "lib": [
-      "esnext"
+      "esnext",
+      "ES2018",
+      "DOM"
     ],
     "types": [
       "node"
