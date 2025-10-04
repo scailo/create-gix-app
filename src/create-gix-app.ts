@@ -5,6 +5,7 @@ import path = require("path");
 import child_process = require("child_process");
 
 const destinationPackage = "scailo-test-widget";
+const version = "0.0.1";
 const rootFolder = process.cwd();
 
 function spawnChildProcess(command: string, args: string[] = [], options = {}) {
@@ -123,10 +124,48 @@ async function createBuildScripts({ inputCSSPath, distFolderName, inputTSPath }:
     fs.writeFileSync("package.json", JSON.stringify(packageJSON, null, 2), { flag: "w", flush: true });
 }
 
+async function createIndexHTML({ appName, version }: { appName: string, version: string }) {
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="./resources/dist/img/favicon.ico" type="image/x-icon">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js?v=${version}">
+    <link rel="stylesheet" href="./resources/dist/css/bundle.css?v=${version}">
+    <title>${appName}</title>
+</head>
+<body class="text-gray-800">
+    <!-- Attach the JS bundle here -->
+    <script src="./resources/dist/js/bundle.src.min.js?v=${version}"></script>
+</body>
+</html>`;
+    // Create index.html
+    fs.writeFileSync("index.html", html, { flag: "w", flush: true });
+}
+
+async function createEntryTS({ inputTSPath }: { inputTSPath: string }) {
+    const script = `
+window.addEventListener("load", async (evt) => {
+    evt.preventDefault();
+    console.log("Scailo Widget!")
+});`;
+
+    // Create index.ts
+    fs.writeFileSync(inputTSPath, script, { flag: "w", flush: true });
+}
+
 async function runPostSetupScripts() {
     // Run the first CSS build
     await spawnChildProcess("npm", ["run", "css:build"]);
     await spawnChildProcess("npm", ["run", "ui:build"]);
+}
+
+/**Converts the string to a title */
+function toTitleCase(str: string) {
+    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
 
 async function main() {
@@ -144,14 +183,13 @@ async function main() {
     await setupGitIgnore();
     await setupNPMDependencies();
 
-
     // Create the resources folder
     const { inputCSSPath, distFolderName, inputTSPath } = createResourcesFolders();
     // Create the input css
     fs.writeFileSync(inputCSSPath, [`@import "tailwindcss"`, `@plugin "daisyui"`].map(a => `${a};`).join("\n"), { flag: "w", flush: true });
 
-    // Create the index.ts
-    fs.writeFileSync(inputTSPath, `console.log("Scailo Widget!")`, { flag: "w", flush: true });
+    await createIndexHTML({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version });
+    await createEntryTS({ inputTSPath });
 
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
     await runPostSetupScripts();
