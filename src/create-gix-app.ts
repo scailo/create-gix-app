@@ -94,17 +94,36 @@ async function setupNPMDependencies() {
         "typescript",
         "@types/node",
         "esbuild",
+        "@inquirer/prompts@7.8.6",
 
         "fastify@4.28.1",
         "@fastify/http-proxy@9.5.0",
         "@fastify/static@7.0.4",
         "fastify-favicon@4.3.0",
-        "dotenv"
+        "dotenv",
+
+        "semver",
+        "@types/semver",
+        "yaml",
+        "adm-zip",
+        "@types/adm-zip",
     ];
 
     await spawnChildProcess("npm", ["install", ...npmDevDependencies, "--save-dev"]);
     // Create the tsconfig.json
     await spawnChildProcess("npx", ["tsc", "--init"]);
+}
+
+async function setupScripts() {
+    const scriptsFolderName = path.join("scripts")
+    let folders = [
+        path.join(scriptsFolderName),
+    ];
+    for (const folder of folders) {
+        fs.mkdirSync(folder, { recursive: true });
+    }
+    // Copy package.ts
+    fs.copyFileSync(path.join(rootFolder, "src", "package.ts"), path.join(scriptsFolderName, "package.ts"));
 }
 
 function createResourcesFolders() {
@@ -154,18 +173,7 @@ async function createBuildScripts({ inputCSSPath, distFolderName, inputTSPath }:
 
         ["dev:serve", `npx tsx -r dotenv/config server.ts`],
 
-        ["package", `
-            npm run css:build && 
-            npm run ui:build && 
-            mkdir -p artifacts/resources && 
-            cp MANIFEST.yaml artifacts/ && 
-            cp *.html artifacts/ && 
-            cp -r resources/dist artifacts/resources/ && 
-            cd artifacts && zip -r ../"${applicationName}.gix" . &&
-            cd .. &&
-            rm -rf artifacts
-            `
-        ],
+        ["package", `npx tsx scripts/package.ts`],
     ]
 
     for (let i = 0; i < scripts.length; i++) {
@@ -231,10 +239,10 @@ app_unique_identifier: "${appIdentifier}"
 min_genesis_version: "*"
 max_genesis_version: "*"
 resources:
-     html_entry: "index.html"
-     logos:
-          - "resources/dist/img/logo.png"
-     external_apis: []`;
+    html_entry: "index.html"
+    logos:
+        - "resources/dist/img/logo.png"
+    external_apis: []`;
 
     // Create MANIFEST.yaml
     fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
@@ -316,6 +324,7 @@ async function main() {
 
     await setupGitIgnore();
     await setupNPMDependencies();
+    await setupScripts();
 
     // Create the resources folder
     const { inputCSSPath, distFolderName, inputTSPath } = createResourcesFolders();

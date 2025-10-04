@@ -151,11 +151,17 @@ function setupNPMDependencies() {
                         "typescript",
                         "@types/node",
                         "esbuild",
+                        "@inquirer/prompts@7.8.6",
                         "fastify@4.28.1",
                         "@fastify/http-proxy@9.5.0",
                         "@fastify/static@7.0.4",
                         "fastify-favicon@4.3.0",
-                        "dotenv"
+                        "dotenv",
+                        "semver",
+                        "@types/semver",
+                        "yaml",
+                        "adm-zip",
+                        "@types/adm-zip",
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDevDependencies, true), ["--save-dev"], false))];
                 case 2:
@@ -167,6 +173,24 @@ function setupNPMDependencies() {
                     _a.sent();
                     return [2 /*return*/];
             }
+        });
+    });
+}
+function setupScripts() {
+    return __awaiter(this, void 0, void 0, function () {
+        var scriptsFolderName, folders, _i, folders_1, folder;
+        return __generator(this, function (_a) {
+            scriptsFolderName = path.join("scripts");
+            folders = [
+                path.join(scriptsFolderName),
+            ];
+            for (_i = 0, folders_1 = folders; _i < folders_1.length; _i++) {
+                folder = folders_1[_i];
+                fs.mkdirSync(folder, { recursive: true });
+            }
+            // Copy package.ts
+            fs.copyFileSync(path.join(rootFolder, "src", "package.ts"), path.join(scriptsFolderName, "package.ts"));
+            return [2 /*return*/];
         });
     });
 }
@@ -211,8 +235,7 @@ function createBuildScripts(_a) {
                 ["ui:build", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
                 ["ui:watch", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
                 ["dev:serve", "npx tsx -r dotenv/config server.ts"],
-                ["package", "\n            npm run css:build && \n            npm run ui:build && \n            mkdir -p artifacts/resources && \n            cp MANIFEST.yaml artifacts/ && \n            cp *.html artifacts/ && \n            cp -r resources/dist artifacts/resources/ && \n            cd artifacts && zip -r ../\"".concat(applicationName, ".gix\" . &&\n            cd .. &&\n            rm -rf artifacts\n            ")
-                ],
+                ["package", "npx tsx scripts/package.ts"],
             ];
             for (i = 0; i < scripts.length; i++) {
                 script = scripts[i];
@@ -254,7 +277,7 @@ function createManifest(_a) {
         var manifest;
         var appName = _b.appName, version = _b.version, appIdentifier = _b.appIdentifier;
         return __generator(this, function (_c) {
-            manifest = "\nmanifest_version: 1\napp_version: \"".concat(version, "\"\napp_name: \"").concat(appName, "\"\napp_unique_identifier: \"").concat(appIdentifier, "\"\nmin_genesis_version: \"*\"\nmax_genesis_version: \"*\"\nresources:\n     html_entry: \"index.html\"\n     logos:\n          - \"resources/dist/img/logo.png\"\n     external_apis: []");
+            manifest = "\nmanifest_version: 1\napp_version: \"".concat(version, "\"\napp_name: \"").concat(appName, "\"\napp_unique_identifier: \"").concat(appIdentifier, "\"\nmin_genesis_version: \"*\"\nmax_genesis_version: \"*\"\nresources:\n    html_entry: \"index.html\"\n    logos:\n        - \"resources/dist/img/logo.png\"\n    external_apis: []");
             // Create MANIFEST.yaml
             fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
@@ -348,29 +371,32 @@ function main() {
                     return [4 /*yield*/, setupNPMDependencies()];
                 case 4:
                     _b.sent();
+                    return [4 /*yield*/, setupScripts()];
+                case 5:
+                    _b.sent();
                     _a = createResourcesFolders(), inputCSSPath = _a.inputCSSPath, distFolderName = _a.distFolderName, inputTSPath = _a.inputTSPath;
                     // Create the input css
                     fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", "@plugin \"daisyui\""].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
                     return [4 /*yield*/, createIndexHTML({ appName: applicationName, version: version })];
-                case 5:
-                    _b.sent();
-                    return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 6:
                     _b.sent();
-                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
+                    return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 7:
                     _b.sent();
-                    return [4 /*yield*/, createTestServer()];
+                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
                 case 8:
                     _b.sent();
-                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createTestServer()];
                 case 9:
                     _b.sent();
-                    return [4 /*yield*/, fixTSConfig()];
+                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
                 case 10:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, fixTSConfig()];
                 case 11:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 12:
                     _b.sent();
                     console.log("Hello there! We are live! This is from TypeScript");
                     return [2 /*return*/];
