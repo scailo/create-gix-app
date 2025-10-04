@@ -319,6 +319,7 @@ async function main() {
     // Copy the .vscode folder
     fs.mkdirSync(path.join(applicationIdentifier, ".vscode"), { recursive: true });
     fs.cpSync(path.join(rootFolder, ".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
+    fs.copyFileSync(path.join(rootFolder, "README.md"), path.join(applicationIdentifier, "README.md"));
 
     // Change the directory
     process.chdir(applicationIdentifier);
