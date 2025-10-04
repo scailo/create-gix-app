@@ -11,7 +11,6 @@ let applicationName = "Scailo Test Widget";
 
 let version = "0.0.1";
 const rootFolder = path.dirname(__dirname);
-console.log("Root folder is: " + rootFolder);
 
 async function acceptUserInputs() {
     applicationName = (await prompt.input({
@@ -97,6 +96,7 @@ async function setupNPMDependencies() {
         "@types/node",
         "esbuild",
         "@inquirer/prompts@7.8.6",
+        "@connectrpc/connect-node@1.4.0",
 
         "fastify@4.28.1",
         "@fastify/http-proxy@9.5.0",
@@ -342,7 +342,7 @@ async function main() {
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
     await fixTSConfig();
     await runPostSetupScripts();
-    console.log("Hello there! We are live! This is from TypeScript");
+    console.log("Your app is ready! What are you going to build next?");
 }
 
 main();

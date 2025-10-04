@@ -55,7 +55,6 @@ var applicationIdentifier = "scailo-test-widget";
 var applicationName = "Scailo Test Widget";
 var version = "0.0.1";
 var rootFolder = path.dirname(__dirname);
-console.log("Root folder is: " + rootFolder);
 function acceptUserInputs() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -154,6 +153,7 @@ function setupNPMDependencies() {
                         "@types/node",
                         "esbuild",
                         "@inquirer/prompts@7.8.6",
+                        "@connectrpc/connect-node@1.4.0",
                         "fastify@4.28.1",
                         "@fastify/http-proxy@9.5.0",
                         "@fastify/static@7.0.4",
@@ -401,7 +401,7 @@ function main() {
                     return [4 /*yield*/, runPostSetupScripts()];
                 case 12:
                     _b.sent();
-                    console.log("Hello there! We are live! This is from TypeScript");
+                    console.log("Your app is ready! What are you going to build next?");
                     return [2 /*return*/];
             }
         });
