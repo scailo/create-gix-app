@@ -52,6 +52,7 @@ async function setupNPMDependencies() {
     // Setup the node modules installation
     const npmDependencies = [
         "@kernelminds/scailo-sdk@latest",
+        "@bufbuild/protobuf@1.4.2",
     ];
 
     await spawnChildProcess("npm", ["install", ...npmDependencies, "--save"]);
@@ -64,9 +65,10 @@ async function setupNPMDependencies() {
         "@types/node",
         "esbuild",
 
-        "fastify",
-        "@fastify/http-proxy",
-        "@fastify/static",
+        "fastify@4.28.1",
+        "@fastify/http-proxy@9.5.0",
+        "@fastify/static@7.0.4",
+        "fastify-favicon@4.3.0",
         "dotenv"
     ];
 
