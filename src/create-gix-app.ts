@@ -84,6 +84,7 @@ async function setupNPMDependencies() {
     const npmDependencies = [
         "@kernelminds/scailo-sdk@latest",
         "@bufbuild/protobuf@1.4.2",
+        "@connectrpc/connect-web@1.1.2"
     ];
 
     await spawnChildProcess("npm", ["install", ...npmDependencies, "--save"]);
