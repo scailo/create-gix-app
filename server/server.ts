@@ -6,10 +6,10 @@ import * as fs from "fs";
 import { createConnectTransport } from "@connectrpc/connect-node";
 import { getClientForLoginService } from "@kernelminds/scailo-sdk";
 
-const upstreamAPI = process.env.upstreamAPI || "";
+const upstreamAPI = (process.env.upstreamAPI || "").trim();
 const port = parseInt(process.env.port || "0");
-const username = process.env.username || "";
-const password = process.env.password || "";
+const username = (process.env.username || "").trim();
+const password = (process.env.password || "").trim();
 
 if (upstreamAPI == undefined || upstreamAPI == null || upstreamAPI == "") {
     console.log("upstreamAPI not set");
@@ -31,14 +31,7 @@ if (password == undefined || password == null || password == "") {
     process.exit(1);
 }
 
-const transport = getTransport(upstreamAPI);
-const server = Fastify({ logger: true, trustProxy: true });
-const loginClient = getClientForLoginService(transport);
-
-let authToken = "";
-let production = false;
-
-export function getTransport(apiEndPoint: string) {
+function getTransport(apiEndPoint: string) {
     return createConnectTransport({
         baseUrl: apiEndPoint, httpVersion: "1.1", useBinaryFormat: false, interceptors: [
             // appendAuthToken
@@ -46,17 +39,27 @@ export function getTransport(apiEndPoint: string) {
     });
 }
 
+const transport = getTransport(upstreamAPI);
+const server = Fastify({ logger: true, trustProxy: true });
+const loginClient = getClientForLoginService(transport);
 
+let authToken = "";
+let production = false;
 
 async function loginToAPI() {
-    loginClient.loginAsEmployeePrimary({ username: username, plainTextPassword: password }).then(response => {
-        authToken = response.authToken;
-        console.log("Logged in with auth token: " + authToken);
-    });
-
-    setTimeout(() => {
-        loginToAPI();
-    }, 3600 * 1000);
+    console.log("About to login to API")
+    try {
+        loginClient.loginAsEmployeePrimary({ username: username, plainTextPassword: password }).then(response => {
+            authToken = response.authToken;
+            console.log("Logged in with auth token: " + authToken);
+        });
+    } catch (e) {
+        console.error(e);
+    } finally {
+        setTimeout(() => {
+            loginToAPI();
+        }, 3600 * 1000);
+    }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -65,7 +68,7 @@ server.register(require('fastify-favicon'), { path: './resources/dist/img', name
 // Setup static handler for web/
 server.register(fastifyStatic, {
     root: path.join(process.cwd(), 'resources', 'dist'),
-    prefix: './resources/dist', // optional: default '/'
+    prefix: '/resources/dist', // optional: default '/'
     decorateReply: false,
     constraints: {} // optional: default {}
 });
@@ -81,9 +84,9 @@ server.get("/", async (request, reply) => {
 
 function replaceBundleCaches(page: string) {
     const version = new Date().toISOString();
-    page = page.replace(`<link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js">`, `<link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js?v=${version}">`)
-    page = page.replace(`<script src="./resources/dist/js/bundle.src.min.js"></script>`, `<script src="./resources/dist/js/bundle.src.min.js?v=${version}"></script>`)
-    page = page.replace(`<link rel="stylesheet" href="./resources/dist/css/bundle.css">`, `<link rel="stylesheet" href="./resources/dist/css/bundle.css?v=${version}">`)
+    page = page.replace(`<link rel="preload" as="script" href="./resources/dist/js/bundle.src.min.js">`, `<link rel="preload" as="script" href="/resources/dist/js/bundle.src.min.js?v=${version}">`)
+    page = page.replace(`<script src="./resources/dist/js/bundle.src.min.js"></script>`, `<script src="/resources/dist/js/bundle.src.min.js?v=${version}"></script>`)
+    page = page.replace(`<link rel="stylesheet" href="./resources/dist/css/bundle.css">`, `<link rel="stylesheet" href="/resources/dist/css/bundle.css?v=${version}">`)
     return page
 }
 
