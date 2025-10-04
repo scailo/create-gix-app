@@ -83,7 +83,7 @@ async function setupNPMDependencies() {
     const npmDependencies = [
         "@kernelminds/scailo-sdk@latest",
         "@bufbuild/protobuf@1.4.2",
-        "@connectrpc/connect-web@1.4.0"
+        "@connectrpc/connect-web@1.7.0"
     ];
 
     await spawnChildProcess("npm", ["install", ...npmDependencies, "--save"]);
@@ -96,7 +96,7 @@ async function setupNPMDependencies() {
         "@types/node",
         "esbuild",
         "@inquirer/prompts@7.8.6",
-        "@connectrpc/connect-node@1.4.0",
+        "@connectrpc/connect-node@1.7.0",
 
         "fastify@4.28.1",
         "@fastify/http-proxy@9.5.0",
