@@ -50,7 +50,8 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var ts = require("typescript");
-var destinationPackage = "scailo-test-widget";
+var applicationIdentifier = "scailo-test-widget";
+var applicationName = "Scailo Test Widget";
 var version = "0.0.1";
 var rootFolder = process.cwd();
 function spawnChildProcess(command, args, options) {
@@ -173,6 +174,8 @@ function createBuildScripts(_a) {
                 ["ui:build", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
                 ["ui:watch", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
                 ["dev:serve", "npx tsx -r dotenv/config server.ts"],
+                ["package", "\n            npm run css:build && \n            npm run ui:build && \n            mkdir -p artifacts/resources && \n            cp MANIFEST.yaml artifacts/ && \n            cp *.html artifacts/ && \n            cp -r resources/dist artifacts/resources/ && \n            cd artifacts && zip -r ../\"".concat(applicationName, ".gix\" . &&\n            cd .. &&\n            rm -rf artifacts\n            ")
+                ],
             ];
             for (i = 0; i < scripts.length; i++) {
                 script = scripts[i];
@@ -293,11 +296,11 @@ function main() {
             switch (_b.label) {
                 case 0:
                     // Create the destination folder
-                    fs.mkdirSync(destinationPackage, { recursive: true });
+                    fs.mkdirSync(applicationIdentifier, { recursive: true });
                     // Copy the .vscode folder
-                    fs.cpSync(path.join(".vscode"), path.join(destinationPackage, ".vscode"), { recursive: true });
+                    fs.cpSync(path.join(".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
                     // Change the directory
-                    process.chdir(destinationPackage);
+                    process.chdir(applicationIdentifier);
                     // Create the package.json
                     return [4 /*yield*/, spawnChildProcess("npm", ["init", "-y"])];
                 case 1:
@@ -312,13 +315,13 @@ function main() {
                     _a = createResourcesFolders(), inputCSSPath = _a.inputCSSPath, distFolderName = _a.distFolderName, inputTSPath = _a.inputTSPath;
                     // Create the input css
                     fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", "@plugin \"daisyui\""].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
-                    return [4 /*yield*/, createIndexHTML({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version: version })];
+                    return [4 /*yield*/, createIndexHTML({ appName: applicationName, version: version })];
                 case 4:
                     _b.sent();
                     return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 5:
                     _b.sent();
-                    return [4 /*yield*/, createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version: version, appIdentifier: "".concat(destinationPackage, ".gix") })];
+                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
                 case 6:
                     _b.sent();
                     return [4 /*yield*/, createTestServer()];

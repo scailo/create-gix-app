@@ -125,6 +125,19 @@ async function createBuildScripts({ inputCSSPath, distFolderName, inputTSPath }:
         ["ui:watch", `npx esbuild ${inputTSPath} --bundle --outfile=${path.join(distFolderName, "js", "bundle.src.min.js")} --watch`],
 
         ["dev:serve", `npx tsx -r dotenv/config server.ts`],
+
+        ["package", `
+            npm run css:build && 
+            npm run ui:build && 
+            mkdir -p artifacts/resources && 
+            cp MANIFEST.yaml artifacts/ && 
+            cp *.html artifacts/ && 
+            cp -r resources/dist artifacts/resources/ && 
+            cd artifacts && zip -r ../"${applicationName}.gix" . &&
+            cd .. &&
+            rm -rf artifacts
+            `
+        ],
     ]
 
     for (let i = 0; i < scripts.length; i++) {
