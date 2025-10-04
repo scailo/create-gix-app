@@ -357,6 +357,7 @@ function main() {
                     // Create the destination folder
                     fs.mkdirSync(applicationIdentifier, { recursive: true });
                     // Copy the .vscode folder
+                    fs.mkdirSync(path.join(applicationIdentifier, ".vscode"), { recursive: true });
                     fs.cpSync(path.join(".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
                     // Change the directory
                     process.chdir(applicationIdentifier);
