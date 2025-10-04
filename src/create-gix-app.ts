@@ -5,7 +5,9 @@ import path = require("path");
 import child_process = require("child_process");
 import ts = require('typescript');
 
-const destinationPackage = "scailo-test-widget";
+const applicationIdentifier = "scailo-test-widget";
+const applicationName = "Scailo Test Widget";
+
 const version = "0.0.1";
 const rootFolder = process.cwd();
 
@@ -265,12 +267,12 @@ function toTitleCase(str: string) {
 async function main() {
 
     // Create the destination folder
-    fs.mkdirSync(destinationPackage, { recursive: true });
+    fs.mkdirSync(applicationIdentifier, { recursive: true });
     // Copy the .vscode folder
-    fs.cpSync(path.join(".vscode"), path.join(destinationPackage, ".vscode"), { recursive: true });
+    fs.cpSync(path.join(".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
 
     // Change the directory
-    process.chdir(destinationPackage);
+    process.chdir(applicationIdentifier);
     // Create the package.json
     await spawnChildProcess("npm", ["init", "-y"]);
 
@@ -282,9 +284,9 @@ async function main() {
     // Create the input css
     fs.writeFileSync(inputCSSPath, [`@import "tailwindcss"`, `@plugin "daisyui"`].map(a => `${a};`).join("\n"), { flag: "w", flush: true });
 
-    await createIndexHTML({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version });
+    await createIndexHTML({ appName: applicationName, version });
     await createEntryTS({ inputTSPath });
-    await createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version, appIdentifier: `${destinationPackage}.gix` });
+    await createManifest({ appName: applicationName, version, appIdentifier: `${applicationIdentifier}.gix` });
     await createTestServer();
 
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
