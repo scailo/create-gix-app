@@ -54,7 +54,8 @@ var prompt = require("@inquirer/prompts");
 var applicationIdentifier = "scailo-test-widget";
 var applicationName = "Scailo Test Widget";
 var version = "0.0.1";
-var rootFolder = __dirname;
+var rootFolder = path.dirname(__dirname);
+console.log("Root folder is: " + rootFolder);
 function acceptUserInputs() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

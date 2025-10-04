@@ -10,7 +10,8 @@ let applicationIdentifier = "scailo-test-widget";
 let applicationName = "Scailo Test Widget";
 
 let version = "0.0.1";
-const rootFolder = __dirname;
+const rootFolder = path.dirname(__dirname);
+console.log("Root folder is: " + rootFolder);
 
 async function acceptUserInputs() {
     applicationName = (await prompt.input({
