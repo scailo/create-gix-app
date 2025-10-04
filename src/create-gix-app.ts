@@ -158,10 +158,21 @@ async function createIndexHTML({ appName, version }: { appName: string, version:
 
 async function createEntryTS({ inputTSPath }: { inputTSPath: string }) {
     const script = `
+import { createConnectTransport } from "@connectrpc/connect-web";
+
 window.addEventListener("load", async (evt) => {
     evt.preventDefault();
     console.log("Scailo Widget!")
-});`;
+});
+
+export function getReadTransport() {
+    return createConnectTransport({
+        // Need to use binary format (at least for the time being)
+        baseUrl: location.origin, useBinaryFormat: false, interceptors: []
+    });
+}
+
+`;
 
     // Create index.ts
     fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });

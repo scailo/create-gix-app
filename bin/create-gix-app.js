@@ -101,6 +101,7 @@ function setupNPMDependencies() {
                 case 0:
                     npmDependencies = [
                         "@kernelminds/scailo-sdk@latest",
+                        "@bufbuild/protobuf@1.4.2",
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDependencies, true), ["--save"], false))];
                 case 1:
@@ -112,9 +113,10 @@ function setupNPMDependencies() {
                         "typescript",
                         "@types/node",
                         "esbuild",
-                        "fastify",
-                        "@fastify/http-proxy",
-                        "@fastify/static",
+                        "fastify@4.28.1",
+                        "@fastify/http-proxy@9.5.0",
+                        "@fastify/static@7.0.4",
+                        "fastify-favicon@4.3.0",
                         "dotenv"
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDevDependencies, true), ["--save-dev"], false))];
@@ -199,7 +201,7 @@ function createEntryTS(_a) {
         var script;
         var inputTSPath = _b.inputTSPath;
         return __generator(this, function (_c) {
-            script = "\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});";
+            script = "\nimport { createConnectTransport } from \"@connectrpc/connect-web\";\n\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});\n\nexport function getReadTransport() {\n    return createConnectTransport({\n        // Need to use binary format (at least for the time being)\n        baseUrl: location.origin, useBinaryFormat: false, interceptors: []\n    });\n}\n\n";
             // Create index.ts
             fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
