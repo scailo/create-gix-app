@@ -50,10 +50,47 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var ts = require("typescript");
+var prompt = require("@inquirer/prompts");
 var applicationIdentifier = "scailo-test-widget";
 var applicationName = "Scailo Test Widget";
 var version = "0.0.1";
 var rootFolder = process.cwd();
+function acceptUserInputs() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, prompt.input({
+                        message: "Enter the Application Name: ",
+                        default: applicationName,
+                        required: true,
+                        validate: function (input) { return input.length > 0; }
+                    })];
+                case 1:
+                    applicationName = (_a.sent()).trim();
+                    return [4 /*yield*/, prompt.input({
+                            message: "Enter the Application Identifier: ",
+                            default: applicationIdentifier,
+                            required: true,
+                            validate: function (input) { return input.length > 0; }
+                        })];
+                case 2:
+                    applicationIdentifier = (_a.sent()).trim();
+                    return [4 /*yield*/, prompt.input({
+                            message: "Enter the Initial Version Number (Semver Format): ",
+                            default: version,
+                            required: true,
+                            validate: function (input) { return input.length > 0; }
+                        })];
+                case 3:
+                    version = (_a.sent()).trim();
+                    console.log("Application Name: ".concat(applicationName));
+                    console.log("Application Identifier: ".concat(applicationIdentifier));
+                    console.log("Version: ".concat(version));
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 function spawnChildProcess(command, args, options) {
     if (args === void 0) { args = []; }
     if (options === void 0) { options = {}; }
@@ -182,6 +219,7 @@ function createBuildScripts(_a) {
                 packageJSONScripts[script[0]] = script[1];
             }
             packageJSON.scripts = packageJSONScripts;
+            packageJSON.version = version;
             fs.writeFileSync("package.json", JSON.stringify(packageJSON, null, 2), { flag: "w", flush: true });
             return [2 /*return*/];
         });
@@ -285,16 +323,14 @@ function runPostSetupScripts() {
         });
     });
 }
-/**Converts the string to a title */
-function toTitleCase(str) {
-    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
-}
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var _a, inputCSSPath, distFolderName, inputTSPath;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0:
+                case 0: return [4 /*yield*/, acceptUserInputs()];
+                case 1:
+                    _b.sent();
                     // Create the destination folder
                     fs.mkdirSync(applicationIdentifier, { recursive: true });
                     // Copy the .vscode folder
@@ -303,38 +339,38 @@ function main() {
                     process.chdir(applicationIdentifier);
                     // Create the package.json
                     return [4 /*yield*/, spawnChildProcess("npm", ["init", "-y"])];
-                case 1:
+                case 2:
                     // Create the package.json
                     _b.sent();
                     return [4 /*yield*/, setupGitIgnore()];
-                case 2:
+                case 3:
                     _b.sent();
                     return [4 /*yield*/, setupNPMDependencies()];
-                case 3:
+                case 4:
                     _b.sent();
                     _a = createResourcesFolders(), inputCSSPath = _a.inputCSSPath, distFolderName = _a.distFolderName, inputTSPath = _a.inputTSPath;
                     // Create the input css
                     fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", "@plugin \"daisyui\""].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
                     return [4 /*yield*/, createIndexHTML({ appName: applicationName, version: version })];
-                case 4:
-                    _b.sent();
-                    return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 5:
                     _b.sent();
-                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
+                    return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 6:
                     _b.sent();
-                    return [4 /*yield*/, createTestServer()];
+                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
                 case 7:
                     _b.sent();
-                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createTestServer()];
                 case 8:
                     _b.sent();
-                    return [4 /*yield*/, fixTSConfig()];
+                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
                 case 9:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, fixTSConfig()];
                 case 10:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 11:
                     _b.sent();
                     console.log("Hello there! We are live! This is from TypeScript");
                     return [2 /*return*/];

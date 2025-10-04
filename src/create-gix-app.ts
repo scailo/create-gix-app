@@ -4,12 +4,40 @@ import fs = require("fs");
 import path = require("path");
 import child_process = require("child_process");
 import ts = require('typescript');
+import prompt = require('@inquirer/prompts');
 
-const applicationIdentifier = "scailo-test-widget";
-const applicationName = "Scailo Test Widget";
+let applicationIdentifier = "scailo-test-widget";
+let applicationName = "Scailo Test Widget";
 
-const version = "0.0.1";
+let version = "0.0.1";
 const rootFolder = process.cwd();
+
+async function acceptUserInputs() {
+    applicationName = (await prompt.input({
+        message: "Enter the Application Name: ",
+        default: applicationName,
+        required: true,
+        validate: input => input.length > 0
+    })).trim();
+
+    applicationIdentifier = (await prompt.input({
+        message: "Enter the Application Identifier: ",
+        default: applicationIdentifier,
+        required: true,
+        validate: input => input.length > 0
+    })).trim();
+
+    version = (await prompt.input({
+        message: "Enter the Initial Version Number (Semver Format): ",
+        default: version,
+        required: true,
+        validate: input => input.length > 0
+    })).trim();
+
+    console.log(`Application Name: ${applicationName}`);
+    console.log(`Application Identifier: ${applicationIdentifier}`);
+    console.log(`Version: ${version}`);
+}
 
 function spawnChildProcess(command: string, args: string[] = [], options = {}) {
     return new Promise((resolve, reject) => {
@@ -146,6 +174,7 @@ async function createBuildScripts({ inputCSSPath, distFolderName, inputTSPath }:
     }
 
     (<any>packageJSON).scripts = packageJSONScripts;
+    (<any>packageJSON).version = version;
     fs.writeFileSync("package.json", JSON.stringify(packageJSON, null, 2), { flag: "w", flush: true });
 }
 
@@ -272,12 +301,8 @@ async function runPostSetupScripts() {
     await spawnChildProcess("npm", ["run", "ui:build"]);
 }
 
-/**Converts the string to a title */
-function toTitleCase(str: string) {
-    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
-}
-
 async function main() {
+    await acceptUserInputs();
 
     // Create the destination folder
     fs.mkdirSync(applicationIdentifier, { recursive: true });
