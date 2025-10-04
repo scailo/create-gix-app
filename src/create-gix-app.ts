@@ -3,6 +3,7 @@
 import fs = require("fs");
 import path = require("path");
 import child_process = require("child_process");
+import ts = require('typescript');
 
 const destinationPackage = "scailo-test-widget";
 const version = "0.0.1";
@@ -184,6 +185,57 @@ resources:
 
 async function createTestServer() {
     fs.copyFileSync(path.join(rootFolder, "server", "server.ts"), "server.ts");
+
+    const envFile = `
+upstreamAPI=http://127.0.0.1:21000
+port=9090
+username=
+password=`;
+
+    fs.writeFileSync(".env", envFile.trim(), { flag: "w", flush: true });
+}
+
+function stripJSONComments(jsonString: string) {
+    // Remove multi-line comments
+    jsonString = jsonString.replace(/\/\*[\s\S]*?\*\//g, '');
+    // Remove single-line comments
+    jsonString = jsonString.replace(/\/\/.*$/gm, '');
+    return jsonString;
+}
+
+async function fixTSConfig() {
+    const configFileName = ts.findConfigFile(
+        "tsconfig.json",
+        ts.sys.fileExists,
+    );
+
+    if (!configFileName) {
+        throw new Error(`Could not find a valid tsconfig.json`);
+    }
+
+    const configFileText = ts.sys.readFile(configFileName);
+    if (!configFileText) {
+        throw new Error(`Could not read file ${configFileName}`);
+    }
+
+    const { config, error } = ts.parseConfigFileTextToJson(configFileName, configFileText);
+
+    if (error) {
+        throw new Error(`Error parsing tsconfig.json: ${error.messageText}`);
+    }
+
+    const parsedCommandLine = ts.parseJsonConfigFileContent(
+        config,
+        ts.sys,
+        path.dirname(configFileName)
+    );
+
+    parsedCommandLine.options.verbatimModuleSyntax = false;
+    parsedCommandLine.options.sourceMap = false;
+    parsedCommandLine.options.declaration = false;
+    parsedCommandLine.options.declarationMap = false;
+
+    fs.writeFileSync("tsconfig.json", JSON.stringify(parsedCommandLine, null, 4), { flag: "w", flush: true });
 }
 
 async function runPostSetupScripts() {
@@ -223,6 +275,7 @@ async function main() {
     await createTestServer();
 
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
+    await fixTSConfig();
     await runPostSetupScripts();
     console.log("Hello there! We are live! This is from TypeScript");
 }

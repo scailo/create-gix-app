@@ -49,6 +49,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
+var ts = require("typescript");
 var destinationPackage = "scailo-test-widget";
 var version = "0.0.1";
 var rootFolder = process.cwd();
@@ -219,8 +220,44 @@ function createManifest(_a) {
 }
 function createTestServer() {
     return __awaiter(this, void 0, void 0, function () {
+        var envFile;
         return __generator(this, function (_a) {
             fs.copyFileSync(path.join(rootFolder, "server", "server.ts"), "server.ts");
+            envFile = "\nupstreamAPI=http://127.0.0.1:21000\nport=9090\nusername=\npassword=";
+            fs.writeFileSync(".env", envFile.trim(), { flag: "w", flush: true });
+            return [2 /*return*/];
+        });
+    });
+}
+function stripJSONComments(jsonString) {
+    // Remove multi-line comments
+    jsonString = jsonString.replace(/\/\*[\s\S]*?\*\//g, '');
+    // Remove single-line comments
+    jsonString = jsonString.replace(/\/\/.*$/gm, '');
+    return jsonString;
+}
+function fixTSConfig() {
+    return __awaiter(this, void 0, void 0, function () {
+        var configFileName, configFileText, _a, config, error, parsedCommandLine;
+        return __generator(this, function (_b) {
+            configFileName = ts.findConfigFile("tsconfig.json", ts.sys.fileExists);
+            if (!configFileName) {
+                throw new Error("Could not find a valid tsconfig.json");
+            }
+            configFileText = ts.sys.readFile(configFileName);
+            if (!configFileText) {
+                throw new Error("Could not read file ".concat(configFileName));
+            }
+            _a = ts.parseConfigFileTextToJson(configFileName, configFileText), config = _a.config, error = _a.error;
+            if (error) {
+                throw new Error("Error parsing tsconfig.json: ".concat(error.messageText));
+            }
+            parsedCommandLine = ts.parseJsonConfigFileContent(config, ts.sys, path.dirname(configFileName));
+            parsedCommandLine.options.verbatimModuleSyntax = false;
+            parsedCommandLine.options.sourceMap = false;
+            parsedCommandLine.options.declaration = false;
+            parsedCommandLine.options.declarationMap = false;
+            fs.writeFileSync("tsconfig.json", JSON.stringify(parsedCommandLine, null, 4), { flag: "w", flush: true });
             return [2 /*return*/];
         });
     });
@@ -288,8 +325,11 @@ function main() {
                     return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
                 case 8:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, fixTSConfig()];
                 case 9:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 10:
                     _b.sent();
                     console.log("Hello there! We are live! This is from TypeScript");
                     return [2 /*return*/];
