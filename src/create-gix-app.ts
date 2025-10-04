@@ -10,7 +10,7 @@ let applicationIdentifier = "scailo-test-widget";
 let applicationName = "Scailo Test Widget";
 
 let version = "0.0.1";
-const rootFolder = process.cwd();
+const rootFolder = __dirname;
 
 async function acceptUserInputs() {
     applicationName = (await prompt.input({
@@ -316,7 +316,7 @@ async function main() {
     fs.mkdirSync(applicationIdentifier, { recursive: true });
     // Copy the .vscode folder
     fs.mkdirSync(path.join(applicationIdentifier, ".vscode"), { recursive: true });
-    fs.cpSync(path.join(".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
+    fs.cpSync(path.join(rootFolder, ".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
 
     // Change the directory
     process.chdir(applicationIdentifier);

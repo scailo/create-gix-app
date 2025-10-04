@@ -54,7 +54,7 @@ var prompt = require("@inquirer/prompts");
 var applicationIdentifier = "scailo-test-widget";
 var applicationName = "Scailo Test Widget";
 var version = "0.0.1";
-var rootFolder = process.cwd();
+var rootFolder = __dirname;
 function acceptUserInputs() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -358,7 +358,7 @@ function main() {
                     fs.mkdirSync(applicationIdentifier, { recursive: true });
                     // Copy the .vscode folder
                     fs.mkdirSync(path.join(applicationIdentifier, ".vscode"), { recursive: true });
-                    fs.cpSync(path.join(".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
+                    fs.cpSync(path.join(rootFolder, ".vscode"), path.join(applicationIdentifier, ".vscode"), { recursive: true });
                     // Change the directory
                     process.chdir(applicationIdentifier);
                     // Create the package.json
