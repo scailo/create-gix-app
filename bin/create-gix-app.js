@@ -50,6 +50,7 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var destinationPackage = "scailo-test-widget";
+var rootFolder = process.cwd();
 function spawnChildProcess(command, args, options) {
     if (args === void 0) { args = []; }
     if (options === void 0) { options = {}; }
@@ -143,6 +144,8 @@ function createResourcesFolders() {
     }
     var inputCSSPath = path.join(srcFoldername, "css", "app.css");
     var inputTSPath = path.join(srcFoldername, "ts", "app.ts");
+    // Copy the img folder
+    fs.cpSync(path.join(rootFolder, "img"), path.join(distFolderName, "img"), { recursive: true });
     return {
         inputCSSPath: inputCSSPath,
         distFolderName: distFolderName,

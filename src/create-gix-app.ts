@@ -5,6 +5,7 @@ import path = require("path");
 import child_process = require("child_process");
 
 const destinationPackage = "scailo-test-widget";
+const rootFolder = process.cwd();
 
 function spawnChildProcess(command: string, args: string[] = [], options = {}) {
     return new Promise((resolve, reject) => {
@@ -90,6 +91,8 @@ function createResourcesFolders() {
 
     const inputCSSPath = path.join(srcFoldername, "css", "app.css");
     const inputTSPath = path.join(srcFoldername, "ts", "app.ts");
+    // Copy the img folder
+    fs.cpSync(path.join(rootFolder, "img"), path.join(distFolderName, "img"), { recursive: true });
 
     return {
         inputCSSPath,
