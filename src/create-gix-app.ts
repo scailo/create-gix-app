@@ -82,7 +82,7 @@ async function setupNPMDependencies() {
     // Setup the node modules installation
     const npmDependencies = [
         "@kernelminds/scailo-sdk@latest",
-        "@bufbuild/protobuf@1.4.2",
+        "@bufbuild/protobuf@1.10.0",
         "@connectrpc/connect-web@1.7.0"
     ];
 

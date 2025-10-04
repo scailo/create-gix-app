@@ -139,7 +139,7 @@ function setupNPMDependencies() {
                 case 0:
                     npmDependencies = [
                         "@kernelminds/scailo-sdk@latest",
-                        "@bufbuild/protobuf@1.4.2",
+                        "@bufbuild/protobuf@1.10.0",
                         "@connectrpc/connect-web@1.7.0"
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDependencies, true), ["--save"], false))];
