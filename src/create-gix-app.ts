@@ -44,7 +44,7 @@ async function setupGitIgnore() {
         ".DS_Store"
     ];
 
-    fs.writeFileSync(".gitignore", gitignoreList.join("\n"), { flag: "w", flush: true });
+    fs.writeFileSync(".gitignore", gitignoreList.join("\n").trim(), { flag: "w", flush: true });
 }
 
 async function setupNPMDependencies() {
@@ -143,7 +143,7 @@ async function createIndexHTML({ appName, version }: { appName: string, version:
 </body>
 </html>`;
     // Create index.html
-    fs.writeFileSync("index.html", html, { flag: "w", flush: true });
+    fs.writeFileSync("index.html", html.trim(), { flag: "w", flush: true });
 }
 
 async function createEntryTS({ inputTSPath }: { inputTSPath: string }) {
@@ -154,7 +154,25 @@ window.addEventListener("load", async (evt) => {
 });`;
 
     // Create index.ts
-    fs.writeFileSync(inputTSPath, script, { flag: "w", flush: true });
+    fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });
+}
+
+async function createManifest({ appName, version, appIdentifier }: { appName: string, version: string, appIdentifier: string }) {
+    const manifest = `
+manifest_version: 1
+app_version: "${version}"
+app_name: "${appName}"
+app_unique_identifier: "${appIdentifier}"
+min_genesis_version: "*"
+max_genesis_version: "*"
+resources:
+     html_entry: "index.html"
+     logos:
+          - "resources/dist/img/logo.png"
+     external_apis: []`;
+
+    // Create MANIFEST.yaml
+    fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
 }
 
 async function runPostSetupScripts() {
@@ -190,6 +208,7 @@ async function main() {
 
     await createIndexHTML({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version });
     await createEntryTS({ inputTSPath });
+    await createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version, appIdentifier: `${destinationPackage}.gix` });
 
     await createBuildScripts({ inputCSSPath, distFolderName, inputTSPath });
     await runPostSetupScripts();

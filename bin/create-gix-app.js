@@ -87,7 +87,7 @@ function setupGitIgnore() {
                 "tsconfig.tsbuildinfo",
                 ".DS_Store"
             ];
-            fs.writeFileSync(".gitignore", gitignoreList.join("\n"), { flag: "w", flush: true });
+            fs.writeFileSync(".gitignore", gitignoreList.join("\n").trim(), { flag: "w", flush: true });
             return [2 /*return*/];
         });
     });
@@ -183,7 +183,7 @@ function createIndexHTML(_a) {
         return __generator(this, function (_c) {
             html = "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link rel=\"shortcut icon\" href=\"./resources/dist/img/favicon.ico\" type=\"image/x-icon\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\n    <link rel=\"preload\" as=\"script\" href=\"./resources/dist/js/bundle.src.min.js?v=".concat(version, "\">\n    <link rel=\"stylesheet\" href=\"./resources/dist/css/bundle.css?v=").concat(version, "\">\n    <title>").concat(appName, "</title>\n</head>\n<body class=\"text-gray-800\">\n    <!-- Attach the JS bundle here -->\n    <script src=\"./resources/dist/js/bundle.src.min.js?v=").concat(version, "\"></script>\n</body>\n</html>");
             // Create index.html
-            fs.writeFileSync("index.html", html, { flag: "w", flush: true });
+            fs.writeFileSync("index.html", html.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
         });
     });
@@ -195,7 +195,19 @@ function createEntryTS(_a) {
         return __generator(this, function (_c) {
             script = "\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});";
             // Create index.ts
-            fs.writeFileSync(inputTSPath, script, { flag: "w", flush: true });
+            fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });
+            return [2 /*return*/];
+        });
+    });
+}
+function createManifest(_a) {
+    return __awaiter(this, arguments, void 0, function (_b) {
+        var manifest;
+        var appName = _b.appName, version = _b.version, appIdentifier = _b.appIdentifier;
+        return __generator(this, function (_c) {
+            manifest = "\nmanifest_version: 1\napp_version: \"".concat(version, "\"\napp_name: \"").concat(appName, "\"\napp_unique_identifier: \"").concat(appIdentifier, "\"\nmin_genesis_version: \"*\"\nmax_genesis_version: \"*\"\nresources:\n     html_entry: \"index.html\"\n     logos:\n          - \"resources/dist/img/logo.png\"\n     external_apis: []");
+            // Create MANIFEST.yaml
+            fs.writeFileSync("MANIFEST.yaml", manifest.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
         });
     });
@@ -254,11 +266,14 @@ function main() {
                     return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
                 case 5:
                     _b.sent();
-                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createManifest({ appName: toTitleCase(destinationPackage.split("-").join(" ")), version: version, appIdentifier: "".concat(destinationPackage, ".gix") })];
                 case 6:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
                 case 7:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 8:
                     _b.sent();
                     console.log("Hello there! We are live! This is from TypeScript");
                     return [2 /*return*/];
