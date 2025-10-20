@@ -214,6 +214,23 @@ async function createEntryTS({ inputTSPath }: { inputTSPath: string }) {
     const script = `
 import { createConnectTransport } from "@connectrpc/connect-web";
 
+/**
+ * Message handler type for Scailo widget. Receives messages from the parent application
+ */
+export type ScailoWidgetMessage = {
+    type: "refresh",
+    payload: any
+};
+
+/**
+ * Message handler for Scailo widget
+ */
+window.addEventListener("message", (evt: MessageEvent<ScailoWidgetMessage>) => {
+    if(evt.data.type == "refresh") {
+        location.reload();
+    }
+});
+
 window.addEventListener("load", async (evt) => {
     evt.preventDefault();
     console.log("Scailo Widget!")
@@ -311,6 +328,14 @@ async function runPostSetupScripts() {
     await spawnChildProcess("npm", ["run", "ui:build"]);
 }
 
+/**
+ * Constant that stores the daisyUI plugin
+ */
+const daisyUiPlugin = `
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark;
+}`
+
 async function main() {
     await acceptUserInputs();
 
@@ -333,7 +358,9 @@ async function main() {
     // Create the resources folder
     const { inputCSSPath, distFolderName, inputTSPath } = createResourcesFolders();
     // Create the input css
-    fs.writeFileSync(inputCSSPath, [`@import "tailwindcss"`, `@plugin "daisyui"`].map(a => `${a};`).join("\n"), { flag: "w", flush: true });
+
+
+    fs.writeFileSync(inputCSSPath, [`@import "tailwindcss"`, daisyUiPlugin].map(a => `${a};`).join("\n"), { flag: "w", flush: true });
 
     await createIndexHTML({ appName: applicationName, version });
     await createEntryTS({ inputTSPath });

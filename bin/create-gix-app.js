@@ -267,7 +267,7 @@ function createEntryTS(_a) {
         var script;
         var inputTSPath = _b.inputTSPath;
         return __generator(this, function (_c) {
-            script = "\nimport { createConnectTransport } from \"@connectrpc/connect-web\";\n\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});\n\nexport function getReadTransport() {\n    return createConnectTransport({\n        // Need to use binary format (at least for the time being)\n        baseUrl: location.origin, useBinaryFormat: false, interceptors: []\n    });\n}\n\n";
+            script = "\nimport { createConnectTransport } from \"@connectrpc/connect-web\";\n\n/**\n * Message handler type for Scailo widget. Receives messages from the parent application\n */\nexport type ScailoWidgetMessage = {\n    type: \"refresh\",\n    payload: any\n};\n\n/**\n * Message handler for Scailo widget\n */\nwindow.addEventListener(\"message\", (evt: MessageEvent<ScailoWidgetMessage>) => {\n    if(evt.data.type == \"refresh\") {\n        location.reload();\n    }\n});\n\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});\n\nexport function getReadTransport() {\n    return createConnectTransport({\n        // Need to use binary format (at least for the time being)\n        baseUrl: location.origin, useBinaryFormat: false, interceptors: []\n    });\n}\n\n";
             // Create index.ts
             fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
@@ -348,6 +348,10 @@ function runPostSetupScripts() {
         });
     });
 }
+/**
+ * Constant that stores the daisyUI plugin
+ */
+var daisyUiPlugin = "\n@plugin \"daisyui\" {\n    themes: light --default, dark --prefersdark;\n}";
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var _a, inputCSSPath, distFolderName, inputTSPath;
@@ -380,7 +384,7 @@ function main() {
                     _b.sent();
                     _a = createResourcesFolders(), inputCSSPath = _a.inputCSSPath, distFolderName = _a.distFolderName, inputTSPath = _a.inputTSPath;
                     // Create the input css
-                    fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", "@plugin \"daisyui\""].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
+                    fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", daisyUiPlugin].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
                     return [4 /*yield*/, createIndexHTML({ appName: applicationName, version: version })];
                 case 6:
                     _b.sent();
