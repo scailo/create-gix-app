@@ -4,7 +4,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "path";
 import * as fs from "fs";
 import { createConnectTransport } from "@connectrpc/connect-node";
-import { getClientForLoginService } from "@kernelminds/scailo-sdk";
+import { getScailoClientForLoginService } from "@kernelminds/scailo-sdk";
 
 const upstreamAPI = (process.env.upstreamAPI || "").trim();
 const port = parseInt(process.env.port || "0");
@@ -41,7 +41,7 @@ function getTransport(apiEndPoint: string) {
 
 const transport = getTransport(upstreamAPI);
 const server = Fastify({ logger: true, trustProxy: true });
-const loginClient = getClientForLoginService(transport);
+const loginClient = getScailoClientForLoginService(transport);
 
 let authToken = "";
 let production = false;

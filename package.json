@@ -1,6 +1,6 @@
 {
   "name": "@kernelminds/create-gix-app",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "🚀 The official Scailo starter framework. Instantly scaffold a complete, dependency-ready starter project that could be deployed as an application or a widget on Scailo.",
   "main": "index.js",
   "repository": "https://github.com/scailo/create-gix-app",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^7.8.6",
-    "@kernelminds/scailo-sdk": "^0.0.113",
+    "@kernelminds/scailo-sdk": "^0.1.0",
     "typescript": "^5.9.3"
   }
 }
