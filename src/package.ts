@@ -39,7 +39,7 @@ async function acceptUserInputs({ existingVersion }: { existingVersion: string }
 
 function spawnChildProcess(command: string, args: string[] = [], options = {}) {
     return new Promise((resolve, reject) => {
-        const child = child_process.spawn(command, args, options);
+        const child = child_process.spawn(command, args, { ...options, shell: process.platform === "win32" ? true : undefined });
 
         // Optional: Log stdout and stderr for debugging
         child.stdout.on('data', (data) => {
