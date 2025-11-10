@@ -251,7 +251,7 @@ function createBuildScripts(_a) {
                 ["css:watch", "npx tailwindcss -i ".concat(appCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --watch")],
                 ["ui:build", "npx esbuild ".concat(appEntryTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
                 ["ui:watch", "npx esbuild ".concat(appEntryTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
-                ["dev:watch", "concurrently 'npm run ui:watch' 'npm run css:watch'"],
+                ["dev:watch", "npx concurrently \"npm run ui:watch\" \"npm run css:watch\""],
                 ["dev:serve", "npx tsx -r dotenv/config server.ts"],
                 ["package", "npx tsx scripts/package.ts"],
             ];
