@@ -110,7 +110,15 @@ This command will:
 
 - Proxy any other incoming requests to the upstreamAPI using your credentials.
 
-#### 3. Develop Your Application
+#### 3. Watch and build TypeScript and CSS files
+
+```bash
+npm run dev:watch
+```
+
+This command executes `npm run css:watch` and `npm run ui:watch` `concurrently`.
+
+#### 4. Develop Your Application
 
 With the server running, you can now start building your application. You will likely need two additional terminal windows for the watch commands.
 
@@ -188,6 +196,7 @@ Here is a quick reference for the available commands:
 | Command           | Description                                                                 |
 | ----------------- | --------------------------------------------------------------------------- |
 | npm run dev:serve | Starts the local development server and API proxy.                          |
+| npm run dev:watch | Watches for changes in CSS files and TypeScript files concurrently.         |
 | npm run css:watch | Watches for changes in CSS files and rebuilds the bundle.css on save.       |
 | npm run ui:watch  | Watches for changes in TypeScript files and rebuilds the JS bundle on save. |
 | npm run package   | Bundles and packages the application for production deployment.             |

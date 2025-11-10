@@ -151,7 +151,8 @@ function setupNPMDependencies() {
                     npmDependencies = [
                         "@kernelminds/scailo-sdk@latest",
                         "@bufbuild/protobuf@1.10.0",
-                        "@connectrpc/connect-web@1.7.0"
+                        "@connectrpc/connect-web@1.7.0",
+                        "path-to-regexp@6.1.0"
                     ];
                     return [4 /*yield*/, spawnChildProcess("npm", __spreadArray(__spreadArray(["install"], npmDependencies, true), ["--save"], false))];
                 case 1:
@@ -165,6 +166,7 @@ function setupNPMDependencies() {
                         "esbuild",
                         "@inquirer/prompts@7.8.6",
                         "@connectrpc/connect-node@1.7.0",
+                        "concurrently@9.2.1",
                         "fastify@4.28.1",
                         "@fastify/http-proxy@9.5.0",
                         "@fastify/static@7.0.4",
@@ -225,28 +227,31 @@ function createResourcesFolders() {
         var folder = resourcesFolders_1[_i];
         fs.mkdirSync(folder, { recursive: true });
     }
-    var inputCSSPath = path.join(srcFoldername, "css", "app.css");
-    var inputTSPath = path.join(srcFoldername, "ts", "app.ts");
+    var appCSSPath = path.join(srcFoldername, "css", "app.css");
+    var appEntryTSPath = path.join(srcFoldername, "ts", "app.ts");
+    var routerEntryTSPath = path.join(srcFoldername, "ts", "router.ts");
     // Copy the img folder
     fs.cpSync(path.join(rootFolder, "img"), path.join(distFolderName, "img"), { recursive: true });
     return {
-        inputCSSPath: inputCSSPath,
+        appCSSPath: appCSSPath,
         distFolderName: distFolderName,
-        inputTSPath: inputTSPath
+        appEntryTSPath: appEntryTSPath,
+        routerEntryTSPath: routerEntryTSPath
     };
 }
 function createBuildScripts(_a) {
     return __awaiter(this, arguments, void 0, function (_b) {
         var packageJSON, packageJSONScripts, scripts, i, script;
-        var inputCSSPath = _b.inputCSSPath, distFolderName = _b.distFolderName, inputTSPath = _b.inputTSPath;
+        var appCSSPath = _b.appCSSPath, distFolderName = _b.distFolderName, appEntryTSPath = _b.appEntryTSPath;
         return __generator(this, function (_c) {
             packageJSON = JSON.parse(fs.readFileSync("package.json", "utf-8"));
             packageJSONScripts = packageJSON.scripts || {};
             scripts = [
-                ["css:build", "npx tailwindcss -i ".concat(inputCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --minify")],
-                ["css:watch", "npx tailwindcss -i ".concat(inputCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --watch")],
-                ["ui:build", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
-                ["ui:watch", "npx esbuild ".concat(inputTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
+                ["css:build", "npx tailwindcss -i ".concat(appCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --minify")],
+                ["css:watch", "npx tailwindcss -i ".concat(appCSSPath, " -o ").concat(path.join(distFolderName, "css", "bundle.css"), " --watch")],
+                ["ui:build", "npx esbuild ".concat(appEntryTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --minify")],
+                ["ui:watch", "npx esbuild ".concat(appEntryTSPath, " --bundle --outfile=").concat(path.join(distFolderName, "js", "bundle.src.min.js"), " --watch")],
+                ["dev:watch", "concurrently 'npm run ui:watch' 'npm run css:watch'"],
                 ["dev:serve", "npx tsx -r dotenv/config server.ts"],
                 ["package", "npx tsx scripts/package.ts"],
             ];
@@ -266,7 +271,7 @@ function createIndexHTML(_a) {
         var html;
         var appName = _b.appName, version = _b.version;
         return __generator(this, function (_c) {
-            html = "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link rel=\"shortcut icon\" href=\"./resources/dist/img/favicon.ico\" type=\"image/x-icon\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\n    <link rel=\"preload\" as=\"script\" href=\"./resources/dist/js/bundle.src.min.js\">\n    <link rel=\"stylesheet\" href=\"./resources/dist/css/bundle.css\">\n    <title>".concat(appName, "</title>\n</head>\n<body class=\"text-gray-800\">\n    <!-- Attach the JS bundle here -->\n    <script src=\"./resources/dist/js/bundle.src.min.js\"></script>\n</body>\n</html>");
+            html = "\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <link rel=\"shortcut icon\" href=\"./resources/dist/img/favicon.ico\" type=\"image/x-icon\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\" />\n    <link rel=\"preload\" as=\"script\" href=\"./resources/dist/js/bundle.src.min.js\">\n    <link rel=\"stylesheet\" href=\"./resources/dist/css/bundle.css\">\n    <title>".concat(appName, "</title>\n</head>\n<body class=\"text-gray-800\">\n    <div id=\"container\" class=\"container\"></div>\n    <!-- Attach the JS bundle here -->\n    <script src=\"./resources/dist/js/bundle.src.min.js\"></script>\n</body>\n</html>");
             // Create index.html
             fs.writeFileSync("index.html", html.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
@@ -276,11 +281,23 @@ function createIndexHTML(_a) {
 function createEntryTS(_a) {
     return __awaiter(this, arguments, void 0, function (_b) {
         var script;
-        var inputTSPath = _b.inputTSPath;
+        var appEntryTSPath = _b.appEntryTSPath;
         return __generator(this, function (_c) {
-            script = "\nimport { createConnectTransport } from \"@connectrpc/connect-web\";\n\n/**\n * Message handler type for Scailo widget. Receives messages from the parent application\n */\nexport type ScailoWidgetMessage = {\n    type: \"refresh\",\n    payload: any\n};\n\n/**\n * Message handler for Scailo widget\n */\nwindow.addEventListener(\"message\", (evt: MessageEvent<ScailoWidgetMessage>) => {\n    if(evt.data.type == \"refresh\") {\n        location.reload();\n    }\n});\n\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    console.log(\"Scailo Widget!\")\n});\n\nexport function getReadTransport() {\n    return createConnectTransport({\n        // Need to use binary format (at least for the time being)\n        baseUrl: location.origin, useBinaryFormat: false, interceptors: []\n    });\n}\n\n";
+            script = "\nimport { createConnectTransport } from \"@connectrpc/connect-web\";\nimport { Router } from \"./router\";\n\n/**\n * Message handler type for Scailo widget. Receives messages from the parent application\n */\nexport type ScailoWidgetMessage = {\n    type: \"refresh\",\n    payload: any\n};\n\n/**\n * Message handler for Scailo widget\n */\nwindow.addEventListener(\"message\", (evt: MessageEvent<ScailoWidgetMessage>) => {\n    if(evt.data.type == \"refresh\") {\n        location.reload();\n    }\n});\n\n/** Starts the router  */\nfunction startRouter() {\n    let r = new Router();\n    r.add(\"/\", (ctx) => {\n        console.log(\"Scailo Widget!\")\n    });\n\n    r.add(\"/404\", (ctx) => {\n        handlePageNotFound(ctx);\n    });\n\n    r.setDefault((ctx) => {\n        location.href = \"/404\";\n    });\n\n    r.start();\n}\n\n/** Handles page not found */\nfunction handlePageNotFound(ctx: any) {\n    let content = <HTMLDivElement>document.getElementById(\"container\");\n    content.innerHTML = \"Invalid page\";\n}\n\nwindow.addEventListener(\"load\", async (evt) => {\n    evt.preventDefault();\n    startRouter();\n});\n\nexport function getReadTransport() {\n    return createConnectTransport({\n        // Need to use binary format (at least for the time being)\n        baseUrl: location.origin, useBinaryFormat: false, interceptors: []\n    });\n}\n\n";
             // Create index.ts
-            fs.writeFileSync(inputTSPath, script.trim(), { flag: "w", flush: true });
+            fs.writeFileSync(appEntryTSPath, script.trim(), { flag: "w", flush: true });
+            return [2 /*return*/];
+        });
+    });
+}
+function createRouterTS(_a) {
+    return __awaiter(this, arguments, void 0, function (_b) {
+        var script;
+        var routerEntryTSPath = _b.routerEntryTSPath;
+        return __generator(this, function (_c) {
+            script = "\n\nimport { match, MatchFunction } from \"path-to-regexp\";\n\n/**Stores the relationship between the path and the provided callback */\ninterface relation {\n    path: MatchFunction<object> | null\n    callback: (ctx: context) => void\n}\n\n/**Class that performs the routing */\nexport class Router {\n    relationships: relation[]\n    defaultRelation: relation\n\n    constructor() {\n        this.relationships = [];\n        this.defaultRelation = <relation>{};\n    }\n\n    /**Adds a path along with the callback to the router */\n    add(path: string, callback: (ctx: context) => void) {\n        let r = <relation>{\n            path: match(path),\n            callback: callback\n        };\n        this.relationships.push(r);\n    }\n\n    setDefault(callback: (ctx: context) => void) {\n        this.defaultRelation = {\n            path: null,\n            callback: callback\n        }\n    }\n\n    /**Navigates the user to the provided href */\n    private _navigate(href: string, searchParams: string) {\n        if (!href.startsWith(\"tel\")) {\n            history.pushState({ href: href, searchParams: searchParams }, \"\", href + searchParams);\n            this.traverseRelationships(href, searchParams);\n        }\n    }\n\n    private traverseRelationships(href: string, searchParams: string) {\n        for (let i = 0; i < this.relationships.length; i++) {\n            let t = this.relationships[i];\n            let match = t.path!(href);\n            if (match) {\n                let c = <context>{\n                    querystring: searchParams,\n                    pathname: href,\n                    path: href + searchParams,\n                    params: match.params\n                }\n                t.callback(c);\n                return\n            }\n        }\n        this.defaultRelation.callback({\n            querystring: location.search,\n            pathname: location.pathname,\n            path: location.pathname + location.search,\n            params: null\n        });\n    }\n\n    _handleAnchorTag(t: HTMLAnchorElement, e: MouseEvent) {\n        if (t.getAttribute(\"download\") != null || t.getAttribute(\"target\") != null || t.getAttribute(\"href\") == null) {\n            return true\n        } else {\n            // Prevent default only in the case where the default functionality of the link is being overridden\n            e.preventDefault();\n            let tempHref = t.href.replace(location.origin, \"\");\n            let split = tempHref.split(\"?\");\n            let href = \"\";\n            let searchParams = \"\";\n            if (split.length == 1) {\n                href = split[0];\n            } else {\n                href = split[0];\n                searchParams = \"?\" + split[1];\n            }\n            this._navigate(href, searchParams);\n        }\n    }\n\n    /**Starts the router */\n    start() {\n        let localThis = this;\n        document.addEventListener(\"click\", e => {\n            if (e.ctrlKey || e.metaKey) {\n                // If control key or any other modifier key has been clicked, do not handle it wih this library\n                return true\n            }\n            let el = <HTMLElement>e.target;\n            if (el.nodeName.toLowerCase() == \"a\") {\n                this._handleAnchorTag(<HTMLAnchorElement>el, e);\n            } else if (el.nodeName.toLowerCase() == \"button\") {\n                return true\n            } else {\n                let parentAnchor: HTMLAnchorElement | null = null;\n                let parentEl = el.parentElement;\n                if (parentEl == null) {\n                    return true\n                }\n                while (parentEl != null) {\n                    if (parentEl.nodeName.toLowerCase() == \"body\") {\n                        break\n                    }\n                    if (parentEl.nodeName.toLowerCase() == \"a\") {\n                        parentAnchor = <HTMLAnchorElement>parentEl;\n                        break\n                    }\n                    parentEl = parentEl.parentElement;\n                }\n                if (parentAnchor == null) {\n                    return true\n                }\n                // Handle click of the parent element here\n                this._handleAnchorTag(parentAnchor, e);\n            }\n        });\n\n        window.addEventListener(\"popstate\", function (e) {\n            e.preventDefault();\n            localThis.traverseRelationships(location.pathname, location.search)\n        });\n\n        /**Create the global function to route to a certain URL */\n        (<any>window).routeTo = function (url: string) {\n            let t = new URL(location.origin + url);\n            localThis._navigate(t.pathname, t.search);\n        }\n\n        this._navigate(location.pathname, location.search);\n    }\n}\n\n/**Stores the router parameters */\nexport interface context {\n    querystring: string\n    /**Is the object that consists of the matched parameters */\n    params: any\n    /**The pathname void of query string \"/login\" */\n    pathname: string\n    /**Pathname and query string \"/login?foo=bar\" */\n    path: string\n}\n    \n";
+            // Create router.ts
+            fs.writeFileSync(routerEntryTSPath, script.trim(), { flag: "w", flush: true });
             return [2 /*return*/];
         });
     });
@@ -365,7 +382,7 @@ function runPostSetupScripts() {
 var daisyUiPlugin = "\n@plugin \"daisyui\" {\n    themes: light --default, dark --prefersdark;\n}";
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, inputCSSPath, distFolderName, inputTSPath;
+        var _a, appCSSPath, distFolderName, appEntryTSPath, routerEntryTSPath;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0: return [4 /*yield*/, acceptUserInputs()];
@@ -393,29 +410,32 @@ function main() {
                     return [4 /*yield*/, setupScripts()];
                 case 5:
                     _b.sent();
-                    _a = createResourcesFolders(), inputCSSPath = _a.inputCSSPath, distFolderName = _a.distFolderName, inputTSPath = _a.inputTSPath;
+                    _a = createResourcesFolders(), appCSSPath = _a.appCSSPath, distFolderName = _a.distFolderName, appEntryTSPath = _a.appEntryTSPath, routerEntryTSPath = _a.routerEntryTSPath;
                     // Create the input css
-                    fs.writeFileSync(inputCSSPath, ["@import \"tailwindcss\"", daisyUiPlugin].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
+                    fs.writeFileSync(appCSSPath, ["@import \"tailwindcss\"", daisyUiPlugin].map(function (a) { return "".concat(a, ";"); }).join("\n"), { flag: "w", flush: true });
                     return [4 /*yield*/, createIndexHTML({ appName: applicationName, version: version })];
                 case 6:
                     _b.sent();
-                    return [4 /*yield*/, createEntryTS({ inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createEntryTS({ appEntryTSPath: appEntryTSPath })];
                 case 7:
                     _b.sent();
-                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
+                    return [4 /*yield*/, createRouterTS({ routerEntryTSPath: routerEntryTSPath })];
                 case 8:
                     _b.sent();
-                    return [4 /*yield*/, createTestServer()];
+                    return [4 /*yield*/, createManifest({ appName: applicationName, version: version, appIdentifier: "".concat(applicationIdentifier, ".gix") })];
                 case 9:
                     _b.sent();
-                    return [4 /*yield*/, createBuildScripts({ inputCSSPath: inputCSSPath, distFolderName: distFolderName, inputTSPath: inputTSPath })];
+                    return [4 /*yield*/, createTestServer()];
                 case 10:
                     _b.sent();
-                    return [4 /*yield*/, fixTSConfig()];
+                    return [4 /*yield*/, createBuildScripts({ appCSSPath: appCSSPath, distFolderName: distFolderName, appEntryTSPath: appEntryTSPath })];
                 case 11:
                     _b.sent();
-                    return [4 /*yield*/, runPostSetupScripts()];
+                    return [4 /*yield*/, fixTSConfig()];
                 case 12:
+                    _b.sent();
+                    return [4 /*yield*/, runPostSetupScripts()];
+                case 13:
                     _b.sent();
                     console.log("Your app is ready! What are you going to build next?");
                     return [2 /*return*/];

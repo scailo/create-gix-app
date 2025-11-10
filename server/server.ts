@@ -74,7 +74,7 @@ server.register(fastifyStatic, {
 });
 
 let indexPage = fs.readFileSync(path.join(process.cwd(), 'index.html'), { encoding: 'utf-8' });
-server.get("/", async (request, reply) => {
+server.get("/*", async (request, reply) => {
     if (!production) {
         indexPage = fs.readFileSync(path.join(process.cwd(), 'index.html'), { encoding: 'utf-8' });
     }
